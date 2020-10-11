@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:aop="http://www.springframework.org/schema/aop"
+   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd">
+
+   <!-- Start mybatis설정 -->
+   <!-- ㅡdb설정 -->
+   <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+      <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+        <property name="url" value="jdbc:oracle:thin:@localhost:1521:xe"/>
+        <property name="username" value="c##spring_user"/>
+        <property name="password" value="yeon"/>
+   </bean>
+
+   <bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+      <property name="dataSource" ref="dataSource" />
+      <property name="mapperLocations" value="classpath:com/java/bank/dao/mapper/BankMapper.xml" />
+   </bean>
+   <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+      <constructor-arg ref="sqlSessionFactoryBean" />
+   </bean>
+   <!-- End mybatis설정 -->
+   
+   
+   <bean id="bankDto" class="com.java.bank.dto.BankDto"></bean>
+   <bean id="bankDaoImpl" class="com.java.bank.dao.BankDaoImpl">
+      <constructor-arg ref="sqlSessionTemplate"></constructor-arg>
+   </bean>
+   <bean id="bankView" class="com.java.bank.ui.BankView">
+      <property name="bankDto" ref="bankDto"/>
+      <property name="bankDao" ref="bankDaoImpl"/>
+   </bean>
+
+   <!-- 공통 클래스 -->
+   <bean id="logAspect" class="com.java.bank.aop.LogAspect"></bean>
+
+
+   <!-- AOP설정 -->
+   <aop:config>
+      <aop:aspect id="exAspect" ref="logAspect">
+         <aop:pointcut expression="within(com.java.bank.dao.*)" id="pMethod"/>
+         <aop:around method="advice" pointcut-ref="pMethod"/>
+      </aop:aspect>
+   </aop:config>
+   
+   
+
+</beans>
